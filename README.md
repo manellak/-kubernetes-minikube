@@ -1,361 +1,403 @@
+
 # kubernetes-minikube
 
-Minikube is a tool that lets you run Kubernetes locally. 
-minikube runs a single-node Kubernetes cluster on your personal computer (including Windows, macOS and Linux PCs) so that you can try out Kubernetes, or for daily development work.
+Minikube is a tool that lets you run Kubernetes locally.  
+Minikube runs a single-node Kubernetes cluster on your personal computer (including Windows, macOS and Linux PCs) so that you can try out Kubernetes or use it for daily development work.
+
+---
 
 ## Docker installation
 
-### installation for Mac, Windows 10 Pro, Enterprise, or Education
+### Installation for Mac, Windows 10 Pro, Enterprise, or Education
 
 https://www.docker.com/get-started
 
-Choose Docker Desktop
+Choose **Docker Desktop**.
 
-### installation for Windows home
+### Installation for Windows Home
 
 https://docs.docker.com/docker-for-windows/install-windows-home/
 
-## Kuberntes Minikube installation
+---
+
+## Kubernetes Minikube installation
 
 https://minikube.sigs.k8s.io/docs/start/
 
-Minikube provides a dashboard (web portal). Access the dashboard using the following command:
+Minikube provides a dashboard (web portal). Access it using:
 
 ```
 minikube dashboard
 ```
 
+---
+
 ## Download this project
 
-This project contains a web service coded in Java, but the language doesn't matter. This project has already been built and the binary version is there:
+This project contains a web service coded in Java (but the language does not matter).  
+The project has already been built and the binary version is included.
 
-First of all, download and uncompress the project: https://github.com/charroux/kubernetes-minikube
+Download and unzip the project:  
+https://github.com/charroux/kubernetes-minikube
 
-## Test this project using Docker
+---
 
-Build the docker image:
+# Test this project using Docker
+
+Build the Docker image:
+
 ```
 docker build -t myservice .
 ```
 
 Check the image:
+
 ```
 docker images
 ```
 
 Start the container:
+
 ```
 docker run -p 4000:8080 -t myservice
 ```
 
-8080 is the port of the web service, while 4000 is the port for accessing the container. Test the web service using a web browser: http://localhost:4000 It displays hello.
+- 8080 = container port  
+- 4000 = host port  
 
-Ctrl-C to stop the Web Service.
+Test in your browser:  
+http://localhost:4000  
 
-Check the containerID:
+You should see **hello**.
+
+Stop the service with:
+
+```
+Ctrl + C
+```
+
+Check the container ID:
+
 ```
 docker ps
 ```
 
 Stop the container:
+
 ```
-docker stop containerID
+docker stop <containerID>
 ```
 
-## Publish the image to the Docker Hub
+---
 
-Retreive the image ID:
+# Publish the image to Docker Hub
+
+Retrieve the image ID:
+
 ```
 docker images
 ```
 
-Tag the docker image: 
+Tag the Docker image:
+
 ```
 docker tag e72b6226a2d4 manellak/myservice:latest
 ```
 
+Login to Docker Hub:
 
-
-Login to docker hub: 
 ```
 docker login
+```
 
-## Create a kubernetes deployment from a Docker image
+Push the image:
+
+```
+docker push manellak/myservice:latest
+```
+
+---
+
+# Create a Kubernetes deployment from a Docker image
+
+Check that your cluster is running:
 
 ```
 kubectl get nodes
 ```
+
+Create the deployment:
+
 ```
 kubectl create deployment myservice --image=efrei/myservice:1
 ```
 
-The image used comes from the Docker hub: https://hub.docker.com/r/efrei/myservice/tags
+The image comes from Docker Hub:  
+https://hub.docker.com/r/efrei/myservice/tags
 
-But you can use your own image instead.
+You can use your own image instead.
 
 Check the pod:
+
 ```
 kubectl get pods
 ```
 
-Check if the state is running.
+Check detailed information:
 
-Get complete logs for a pods: 
 ```
 kubectl describe pods
 ```
 
-Retreive the IP address but notice that this IP address is ephemeral since a pods can be deleted and replaced by a new one.
+View logs:
 
-Then retrieve the deployment in the minikube dashboard. 
-Actually the Docker container is runnung inside a Kubernetes pods (look at the pod in the dashboard).
-  
-You can also enter inside the container in a interactive mode with:
 ```
-kubectl exec -it podname -- /bin/bash
+kubectl logs <pod-name>
 ```
 
-where podname is the name of the pods obtained with:
+Enter the container in interactive mode:
+
 ```
-kubectl get pods
+kubectl exec -it <pod-name> -- /bin/bash
 ```
 
-List the containt of the container with:
+If bash is not available:
+
 ```
-ls
+kubectl exec -it <pod-name> -- /bin/sh
 ```
 
-Don't forget to exit the container with:
+Exit the container:
+
 ```
 exit
 ```
 
-## Expose the Deployment through a service
+---
 
-A Kubernetes Service is an abstraction which defines a logical set of Pods running somewhere in the cluster, 
-that all provide the same functionality. 
-When created, each Service is assigned a unique IP address (also called clusterIP). 
-This address is tied to the lifespan of the Service, and will not change while the Service is alive.
+# Expose the Deployment through a Service
 
-## Expose HTTP and HTTPS routes from outside the cluster to services within the cluster
+A Kubernetes Service defines a logical set of Pods and provides a stable access point.
 
-For some parts of your application (for example, frontends) you may want to expose a Service onto an external IP address, that’s outside of your cluster.
+Service types:
 
-Kubernetes ServiceTypes allow you to specify what kind of Service you want. The default is ClusterIP.
+- **ClusterIP** – Internal only (default)
+- **NodePort** – Accessible via NodeIP:NodePort
+- **LoadBalancer** – External load balancer (cloud environments)
+- **ExternalName** – Maps to an external DNS name
 
-Type values and their behaviors are:
+---
 
-* ClusterIP: Exposes the Service on a cluster-internal IP. Choosing this value makes the Service only reachable from within the cluster. This is the default ServiceType.
-* NodePort: Exposes the Service on each Node’s IP at a static port (the NodePort). A ClusterIP Service, to which the NodePort Service routes, is automatically created. You’ll be able to contact the NodePort Service, from outside the cluster, by requesting NodeIP:NodePort.
-* LoadBalancer: Exposes the Service externally using a cloud provider’s load balancer. NodePort and ClusterIP Services, to which the external load balancer routes, are automatically created.
-* ExternalName: Maps the Service to the contents of the externalName field (e.g. foo.bar.example.com), by returning a CNAME record
-
-## Expose HTTP and HTTPS route using NodePort
+## Expose using NodePort
 
 ```
 kubectl expose deployment myservice --type=NodePort --port=8080
 ```
 
 Retrieve the service address:
+
 ```
 minikube service myservice --url
 ```
 
-This format of this address is `NodeIP:NodePort`.
+The format is:
 
-Test this address inside your browser. It should display hello again.
+```
+NodeIP:NodePort
+```
 
-Look from the NodeIP and the NodePort in the minikube dashboard.
+Test this address in your browser.
 
-## Scaling and load balancing
+---
 
-Check if the myservice deployment is running:
+# Scaling and Load Balancing
+
+Check deployments:
 
 ```
 kubectl get deployments
 ```
 
-How many instance are actually running:
+Check running pods:
 
 ```
 kubectl get pods
 ```
 
-Start a second instance:
+Scale to 2 replicas:
 
 ```
 kubectl scale --replicas=2 deployment/myservice
 ```
+
+Verify:
+
 ```
 kubectl get deployments
-```
-
-and 
-
-```
 kubectl get pods
 ```
 
-again
+---
 
-## Creating a Service of type LoadBalancer
+# Create a Service of type LoadBalancer
 
-Check if the myservice deployment is running:
-
-```
-kubectl get deployments
-```
-
-If a service is running in front of the deployment you must delete this service first in ordre to create a new one of kind LoadBalancer. So retreive the service using:
+If a service already exists, delete it first:
 
 ```
 kubectl get services
+kubectl delete service <serviceName>
 ```
-And delete it:
-```
-kubectl delete service serviceName
-```
+
+Create the LoadBalancer service:
+
 ```
 kubectl expose deployment myservice --type=LoadBalancer --port=8080
 ```
+
+Get the URL:
+
 ```
 minikube service myservice --url
 ```
-Test in your web browser
 
-## Rolling updates
+---
 
-Rolling updates allow Deployments' update to take place with zero downtime by incrementally updating Pods instances with new ones.
+# Rolling Updates
 
-To update the image of the application to version 2, use the set image subcommand, followed by the deployment name and the new image version:
+Update the image:
+
 ```
-kubectl set image deployments/my-deployment my-deployment=dockerHudId/my-image:v2
-```
-
-You can also confirm the update by running the rollout status subcommand:
-```
-kubectl rollout status deployments/my-deployment
+kubectl set image deployment/myservice myservice=dockerHubId/my-image:v2
 ```
 
-To roll back the deployment to your last working version, use the rollout undo subcommand:
+Check rollout status:
+
 ```
-kubectl rollout undo deployments/my-deployment
+kubectl rollout status deployment/myservice
 ```
 
-## Create a deployment and a service using a yaml file
+Rollback:
 
-Yaml files can be used instead of using the command `kubectl create deployment` and `kubectl expose deployment`
+```
+kubectl rollout undo deployment/myservice
+```
 
-The yaml file for the deployment: https://github.com/charroux/kubernetes-minikube/blob/main/myservice-deployment.yml
+---
 
-The yaml file for the node port service: https://github.com/charroux/kubernetes-minikube/blob/main/myservice-service.yml
+# Create a Deployment and Service using YAML
 
-The yaml file for the node port service: https://github.com/charroux/kubernetes-minikube/blob/main/myservice-loadbalancing-service.yml
+Deployment YAML:  
+https://github.com/charroux/kubernetes-minikube/blob/main/myservice-deployment.yml
 
-Apply the deployment:
+NodePort service YAML:  
+https://github.com/charroux/kubernetes-minikube/blob/main/myservice-service.yml
+
+LoadBalancer service YAML:  
+https://github.com/charroux/kubernetes-minikube/blob/main/myservice-loadbalancing-service.yml
+
+Apply deployment:
+
 ```
 kubectl apply -f myservice-deployment.yml
 ```
 
-Apply the node port service: 
+Apply NodePort service:
+
 ```
 kubectl apply -f myservice-service.yml
 ```
 
-or 
+Apply LoadBalancer service:
 
-Apply the service of type loadbalancer:
 ```
 kubectl apply -f myservice-loadbalancing-service.yml
 ```
-Then test if it works as expected.
 
-# Routing rule to a service using Ingress
+---
 
-You can use Ingress to expose your Service. 
-Ingress is not a Service type, but it acts as the entry point for your cluster. 
-It lets you consolidate your routing rules into a single resource as it can expose multiple services under the same IP address.
-Ingress exposes HTTP and HTTPS routes from outside the cluster to services within the cluster. 
-An Ingress may be configured to give Services externally-reachable URLs, load balance traffic, terminate SSL / TLS, and offer name-based virtual hosting.
+# Routing using Ingress
 
-## Set up Ingress on Minikube with the NGINX Ingress Controller
-
-Enable the NGINX Ingress controller: 
+Enable NGINX Ingress:
 
 ```
 minikube addons enable ingress
 ```
-Verify that the NGINX Ingress controller is running:
+
+Verify:
+
 ```
 kubectl get pods -n ingress-nginx
 ```
 
-Create a Deployment and expose it as a NodePort (not a loadbalancer).
-
-Check if it works.
-
-A yaml file for ingress: https://github.com/charroux/kubernetes-minikube/blob/main/ingress.yml
+Apply ingress YAML:
 
 ```
 kubectl apply -f ingress.yml
 ```
 
-Retrieve the IP address of Ingress: 
+Get ingress:
 
 ```
 kubectl get ingress
 ```
 
+---
+
+## Configure hosts file
+
+### Linux
+
+Edit `/etc/hosts` and add:
+
 ```
-NAME                 CLASS    HOSTS                  ADDRESS        PORTS   AGE
-
-example-ingress      nginx   myservice.info         192.168.64.2   80      18m
+<minikube-ip> myservice.info
 ```
 
-On Linux: edit the `/etc/hosts` file and add at the bottom values for: 
+Get IP:
 
-IngressAddress myservice.info
-
-Where address is given by:
 ```
 minikube ip
 ```
 
-On Mac: edit the `/etc/hosts` file and add at the bottom values for: 
+### Mac
 
+Add:
+
+```
 127.0.0.1 myservice.info
+```
 
+### Windows
 
-Then check in your Web browser: 
-
-http://myservice.info/
-
-On Windows : edit the `c:\windows\system32\drivers\etc\hosts` file, add 
-
-`127.0.0.1 myservice.info`	
-
-Enable a tunnel for Minikube:
+Edit:
 
 ```
-minikube addons enable ingress-dns
+C:\Windows\System32\drivers\etc\hosts
 ```
+
+Add:
+
+```
+127.0.0.1 myservice.info
+```
+
+Start tunnel:
+
 ```
 minikube tunnel
 ```
 
-Then check in your Web browser: 
-
-http://myservice.info/
-
-
-Create a second deployment and its service, then add a new route to the ingress.yml file.
-
-## Delete resources
+Test in browser:
 
 ```
-kubectl delete services myservice
+http://myservice.info
 ```
+
+---
+
+# Delete resources
+
 ```
+kubectl delete service myservice
 kubectl delete deployment myservice
 ```
-
