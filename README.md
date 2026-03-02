@@ -9,19 +9,27 @@ minikube runs a single-node Kubernetes cluster on your personal computer (includ
 
 https://www.docker.com/get-started
 
-I Chose Docker Desktop
+Choose Docker Desktop
 
+### installation for Windows home
 
+https://docs.docker.com/docker-for-windows/install-windows-home/
+
+## Kuberntes Minikube installation
+
+https://minikube.sigs.k8s.io/docs/start/
+
+Minikube provides a dashboard (web portal). Access the dashboard using the following command:
+
+```
+minikube dashboard
+```
 
 ## Download this project
 
 This project contains a web service coded in Java, but the language doesn't matter. This project has already been built and the binary version is there:
 
 First of all, download and uncompress the project: https://github.com/charroux/kubernetes-minikube
-
-You can also use git: `git clone https://github.com/charroux/kubernetes-minikube`
-
-Then move to the sud directory with `cd kubernetes-minikube/myservice` where a DockerFile is.
 
 ## Test this project using Docker
 
@@ -66,18 +74,11 @@ Tag the docker image:
 docker tag e72b6226a2d4 manellak/myservice:latest
 ```
 
-Example: `docker tag 1dsd512s0d myDockerID/myservice:1`
+
 
 Login to docker hub: 
 ```
 docker login
-
-
-Push the image to the docker hub:
-```
-docker push manellak/myservice:latest
-```
-
 
 ## Create a kubernetes deployment from a Docker image
 
