@@ -12,11 +12,7 @@ Minikube runs a single-node Kubernetes cluster on your personal computer (includ
 
 https://www.docker.com/get-started
 
-Choose **Docker Desktop**.
 
-### Installation for Windows Home
-
-https://docs.docker.com/docker-for-windows/install-windows-home/
 
 ---
 
